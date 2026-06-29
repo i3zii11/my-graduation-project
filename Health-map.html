@@ -695,7 +695,7 @@
 
     const storedUser = getStoredPortalUser();
     if (!storedUser || !storedUser.user || !storedUser.user.id) {
-      window.location.href = './Login/login.html';
+      window.location.href = './Login/index.html';
     }
 
     const map = L.map('map', { zoomControl: true }).setView([21.543333, 39.172779], 11);
@@ -875,7 +875,7 @@ marker.bindPopup(`
 
         if (!snap.exists()) {
           alert('الحساب غير موجود في قاعدة البيانات');
-          window.location.href = './Login/login.html';
+          window.location.href = './Login/index.html';
           return false;
         }
 
@@ -884,7 +884,7 @@ marker.bindPopup(`
 
         if (role !== 'health' && role !== 'صحة' && role !== 'موظف صحة') {
           alert('ليس لديك صلاحية دخول خريطة قسم الصحة');
-          window.location.href = './Login/login.html';
+          window.location.href = './Login/index.html';
           return false;
         }
 
@@ -895,7 +895,7 @@ marker.bindPopup(`
       } catch (error) {
         console.error(error);
         alert('تعذر تحميل بيانات المستخدم');
-        window.location.href = './Login/login.html';
+        window.location.href = './Login/index.html';
         return false;
       }
     }
@@ -945,7 +945,7 @@ marker.bindPopup(`
         sessionStorage.removeItem('portalUser');
         localStorage.removeItem('portalPendingAuth');
         sessionStorage.removeItem('portalPendingAuth');
-        window.location.href = './Login/login.html';
+        window.location.href = './Login/index.html';
       }
     });
 
