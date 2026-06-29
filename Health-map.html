@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الخريطة التفاعلية - قسم الصحة</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Tajawal", sans-serif;
+    }
+
+    :root {
+      --primary: #1f8a5b;
+      --primary-dark: #166847;
+      --primary-light: #e9f7f0;
+      --bg: #f6f8f7;
+      --white: #ffffff;
+      --text: #1e2a24;
+      --muted: #6b7d75;
+      --border: #dfe7e3;
+      --danger: #d9534f;
+      --warning: #f0ad4e;
+      --success: #2e8b57;
+      --shadow: 0 12px 30px rgba(20, 60, 40, 0.08);
+      --radius: 20px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background:linear-gradient(180deg, #159447 0%, #0f7d3c 100%);
+      color: white;
+      padding: 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+    }
+
+    .brand-logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.16);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .brand-text p {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .user-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 18px;
+      backdrop-filter: blur(6px);
+    }
+
+    .label {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-bottom: 6px;
+    }
+
+    #welcomeName {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    #userRoleText {
+      font-size: 13px;
+      line-height: 1.8;
+      opacity: 0.95;
+    }
+
+    .menu-title {
+      font-size: 13px;
+      opacity: 0.8;
+      margin: 6px 10px 10px;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav-item {
+  display: block;
+  padding: 14px 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: 0.25s ease;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255,255,255,0.10);
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+    .nav-item::after {
+      display: none;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateX(-3px);
+    }
+
+    .nav-item:hover::after,
+    .nav-item.active::after {
+    display: none;
+    }
+
+    .icon {
+      display: none;
+    }
+
+    .nav-item span:last-child {
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-item.active {
+      background: #ffffff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.10);
+    }
+
+    .nav-item.active .icon {
+      background: var(--primary-light);
+    }
+
+    .logout-btn {
+      width: 100%;
+      margin-top: auto;
+      padding: 14px;
+      border: none;
+      border-radius: 16px;
+      background: #ffffff;
+      color: var(--primary-dark);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.25s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .logout-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .main {
+      flex: 1;
+      padding: 26px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .topbar-left h1 {
+      font-size: 30px;
+      color: var(--primary-dark);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .topbar-left p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .top-pill {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: #355047;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 6px 16px rgba(15, 109, 70, 0.06);
+    }
+
+    .top-pill.primary {
+      background: var(--primary-dark);
+      color: #ffffff;
+      border-color: var(--primary-dark);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 18px;
+      border: 1px solid #e3ece6;
+      box-shadow: 0 10px 24px rgba(15, 109, 70, 0.06);
+      transition: 0.25s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-card h3 {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .stat-number {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 20px;
+      border: 1px solid #e3ece6;
+      box-shadow: 0 12px 28px rgba(15, 109, 70, 0.06);
+      transition: 0.25s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 16px 34px rgba(15, 109, 70, 0.08);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .card-header h2 {
+      font-size: 22px;
+      color: #18342c;
+      font-weight: 800;
+    }
+
+    .card-header p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .select-control,
+    .refresh-btn {
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 0 14px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .refresh-btn {
+      background: var(--primary-dark);
+      color: #fff;
+      border-color: var(--primary-dark);
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .refresh-btn:hover {
+      background: var(--primary);
+    }
+
+    #map {
+      width: 100%;
+      height: 620px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid #dfe8e2;
+    }
+
+    .side-panel h3 {
+      font-size: 20px;
+      color: #18342c;
+      margin-bottom: 14px;
+      font-weight: 800;
+    }
+
+    .legend-item,
+    .report-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .legend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .red { background: #dc2626; }
+    .orange { background: #f59e0b; }
+    .green { background: #0f6d46; }
+    .gray { background: #6b7280; }
+
+    .report-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-left: 4px;
+    }
+
+    .report-item {
+      padding: 12px;
+      border-radius: 16px;
+      background: #f8fbf9;
+      border: 1px solid #e5eee8;
+      align-items: flex-start;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .report-item:hover {
+      background: #eef8f2;
+      transform: translateX(-2px);
+    }
+
+    .report-item-text {
+      flex: 1;
+    }
+
+    .report-item-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #18342c;
+      margin-bottom: 6px;
+    }
+
+    .report-item-sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .leaflet-popup-content {
+      font-family: "Tajawal", sans-serif;
+      line-height: 1.9;
+      min-width: 220px;
+    }
+
+    .popup-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 8px;
+    }
+
+    .popup-row {
+      margin-bottom: 4px;
+      color: #374151;
+      font-size: 14px;
+    }
+    
+    html {
+  scroll-behavior: smooth;
+}
+    .page-fade {
+      animation: pageFade 0.35s ease;
+    }
+
+    @keyframes pageFade {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1200px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+      }
+
+      .main {
+        padding: 18px;
+      }
+
+      #map {
+        height: 450px;
+      }
+    }
+  </style>
+</head>
+<body class="page-fade">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">🩺</div>
+        <div class="brand-text">
+          <h1>قسم الصحة</h1>
+          <p>الخريطة التفاعلية الصحية</p>
+        </div>
+      </div>
+
+      <div class="user-card">
+        <div class="label">المستخدم الحالي</div>
+        <h2 id="welcomeName">جاري التحميل...</h2>
+        <p id="userRoleText">متابعة البلاغات الصحية والمواقع الجغرافية للحالات</p>
+      </div>
+
+      <div class="menu-title">القائمة الرئيسية</div>
+      <div class="nav">
+        <a class="nav-item" href="./health.html">
+          <div class="icon"></div>
+          <span>الرئيسية</span>
+        </a>
+
+        <a class="nav-item" href="./health.html#appointments">
+          <div class="icon"></div>
+          <span>إدارة المواعيد</span>
+        </a>
+
+        <a class="nav-item active" href="./Health-map.html">
+          <div class="icon"></div>
+          <span>الخريطة التفاعلية</span>
+        </a>
+
+        <a class="nav-item" href="./health.html#reports">
+          <div class="icon"></div>
+          <span>البلاغات الصحية</span>
+        </a>
+
+        <a class="nav-item" href="./health.html#actions">
+          <div class="icon"></div>
+          <span>الإجراءات السريعة</span>
+        </a>
+      </div>
+
+      <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1>الخريطة التفاعلية الصحية</h1>
+          <p>عرض مواقع البلاغات الصحية ومتابعتها بشكل مباشر على الخريطة</p>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="top-pill primary">قسم الصحة</div>
+          <div class="top-pill" id="todayLabel">اليوم</div>
+        </div>
+      </div>
+
+      <section class="stats-grid">
+        <div class="stat-card">
+          <h3>إجمالي البلاغات</h3>
+          <div class="stat-number" id="totalReports">0</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>بلاغات معلقة</h3>
+          <div class="stat-number" id="openReports">0</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>بلاغات عاجلة</h3>
+          <div class="stat-number" id="progressReports">0</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>بلاغات محلولة</h3>
+          <div class="stat-number" id="completedReports">0</div>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2>خريطة البلاغات الصحية</h2>
+              <p>جميع البلاغات الصحية المرتبطة بالمواقع الجغرافية</p>
+            </div>
+
+            <div class="header-actions">
+              <select id="statusFilter" class="select-control">
+                <option value="all">كل الحالات</option>
+                <option value="pending">قيد المراجعة</option>
+                <option value="urgent">عاجل</option>
+                <option value="resolved">تم الحل</option>
+              </select>
+
+              <button id="refreshBtn" class="refresh-btn">تحديث</button>
+            </div>
+          </div>
+
+          <div id="map"></div>
+        </div>
+
+        <div class="card side-panel">
+          <h3>مفتاح الألوان</h3>
+
+          <div class="legend-list">
+            <div class="legend-item">
+              <span class="legend-dot orange"></span>
+              <span>بلاغ قيد المراجعة</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot red"></span>
+              <span>بلاغ عاجل</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot green"></span>
+              <span>بلاغ محلول</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot gray"></span>
+              <span>حالة غير محددة</span>
+            </div>
+          </div>
+
+          <h3>آخر البلاغات الصحية</h3>
+          <div class="report-list" id="reportList">
+            <div class="empty-state">جاري تحميل البلاغات...</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script type="module">
+    import { db, auth } from './Login/api.js';
+    import {
+      collection,
+      getDocs,
+      query,
+      orderBy,
+      doc,
+      getDoc
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+    const welcomeName = document.getElementById('welcomeName');
+    const userRoleText = document.getElementById('userRoleText');
+    const totalReports = document.getElementById('totalReports');
+    const openReports = document.getElementById('openReports');
+    const progressReports = document.getElementById('progressReports');
+    const completedReports = document.getElementById('completedReports');
+    const statusFilter = document.getElementById('statusFilter');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const reportList = document.getElementById('reportList');
+    const todayLabel = document.getElementById('todayLabel');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const today = new Date();
+    todayLabel.textContent = today.toLocaleDateString('ar-SA', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    function getStoredPortalUser() {
+      const saved =
+        localStorage.getItem('portalUser') ||
+        sessionStorage.getItem('portalUser') ||
+        localStorage.getItem('portalPendingAuth') ||
+        sessionStorage.getItem('portalPendingAuth');
+
+      if (!saved) return null;
+
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+
+    const storedUser = getStoredPortalUser();
+    if (!storedUser || !storedUser.user || !storedUser.user.id) {
+      window.location.href = './Login/login.html';
+    }
+
+    const map = L.map('map', { zoomControl: true }).setView([21.543333, 39.172779], 11);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const markersLayer = L.layerGroup().addTo(map);
+
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
+    });
+
+    let currentUser = storedUser;
+    let allReports = [];
+    let markerObjects = [];
+
+    function normalizeStatus(status) {
+      return String(status || '').trim().toLowerCase();
+    }
+
+    function getStatusLabel(status) {
+      const value = normalizeStatus(status);
+      if (value === 'pending') return 'قيد المراجعة';
+      if (value === 'urgent') return 'عاجل';
+      if (value === 'resolved' || value === 'completed' || value === 'closed') return 'تم الحل';
+      return 'غير محددة';
+    }
+
+    function getMarkerColor(status) {
+      const value = normalizeStatus(status);
+      if (value === 'urgent') return '#dc2626';
+      if (value === 'pending') return '#f59e0b';
+      if (value === 'resolved' || value === 'completed' || value === 'closed') return '#0f6d46';
+      return '#6b7280';
+    }
+
+    function normalizeReport(docItem) {
+      const data = docItem.data();
+      const lat = Number(data.lat);
+      const lng = Number(data.lng);
+
+      return {
+        id: docItem.id,
+        title: data.title || data.type || 'بدون عنوان',
+        type: data.type || data.title || 'بلاغ صحي',
+        description: data.description || '',
+        location: data.location || 'غير محدد',
+        priority: data.priority || 'pending',
+        status: data.status || 'pending',
+        department: data.department || 'health',
+        lat: Number.isFinite(lat) ? lat : null,
+        lng: Number.isFinite(lng) ? lng : null,
+        createdAt: data.createdAt || null
+      };
+    }
+
+    function updateStats(data) {
+      totalReports.textContent = data.length;
+      openReports.textContent = data.filter(r => normalizeStatus(r.status) === 'pending').length;
+      progressReports.textContent = data.filter(r => normalizeStatus(r.status) === 'urgent').length;
+      completedReports.textContent = data.filter(r => ['resolved', 'completed', 'closed'].includes(normalizeStatus(r.status))).length;
+    }
+
+    function renderReportList(data) {
+      if (!data.length) {
+        reportList.innerHTML = `<div class="empty-state">لا توجد بلاغات صحية مطابقة حالياً</div>`;
+        return;
+      }
+
+      reportList.innerHTML = '';
+
+      data.slice(0, 8).forEach((report) => {
+        const item = document.createElement('div');
+        item.className = 'report-item';
+
+        const dot = document.createElement('span');
+        dot.className = 'legend-dot';
+        dot.style.background = getMarkerColor(report.status);
+
+        const text = document.createElement('div');
+        text.className = 'report-item-text';
+        text.innerHTML = `
+          <div class="report-item-title">${report.title}</div>
+          <div class="report-item-sub">
+            ${report.location}<br>
+            الحالة: ${getStatusLabel(report.status)}
+          </div>
+        `;
+
+        item.appendChild(dot);
+        item.appendChild(text);
+
+        item.addEventListener('click', () => {
+          const match = markerObjects.find(m => m.id === report.id);
+          if (match && report.lat && report.lng) {
+            map.setView([report.lat, report.lng], 15);
+            match.marker.openPopup();
+          }
+        });
+
+        reportList.appendChild(item);
+      });
+    }
+
+    function renderMap(data) {
+      markersLayer.clearLayers();
+      markerObjects = [];
+
+      const reportsWithCoords = data.filter(report => Number.isFinite(report.lat) && Number.isFinite(report.lng));
+
+      if (!reportsWithCoords.length) {
+        map.setView([21.543333, 39.172779], 11);
+        setTimeout(() => map.invalidateSize(), 250);
+        return;
+      }
+
+      const bounds = [];
+
+      reportsWithCoords.forEach((report) => {
+        const arrowIcon = L.divIcon({
+          className: '',
+          html: `<div style="width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:18px solid ${getMarkerColor(report.status)};transform: rotate(180deg);"></div>`,
+          iconSize: [20, 20],
+          iconAnchor: [10, 20]
+        });
+
+        const marker = L.marker([report.lat, report.lng]);
+
+marker.bindPopup(`
+  <div>
+    <div class="popup-title">${report.title}</div>
+    <div class="popup-row"><strong>الوصف:</strong> ${report.description || 'لا يوجد وصف'}</div>
+    <div class="popup-row"><strong>الموقع:</strong> ${report.location}</div>
+    <div class="popup-row"><strong>الحالة:</strong> ${getStatusLabel(report.status)}</div>
+  </div>
+`);
+
+        marker.addTo(markersLayer);
+        bounds.push([report.lat, report.lng]);
+        markerObjects.push({ id: report.id, marker });
+      });
+
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
+
+      setTimeout(() => map.invalidateSize(), 250);
+    }
+
+    function getFilteredReports() {
+      const statusValue = statusFilter.value;
+      return allReports.filter((report) => {
+        const hasCoordinates = Number.isFinite(report.lat) && Number.isFinite(report.lng);
+        const normalized = normalizeStatus(report.status);
+        const matchesStatus = statusValue === 'all' || normalized === statusValue || (statusValue === 'resolved' && ['resolved', 'completed', 'closed'].includes(normalized));
+        return hasCoordinates && matchesStatus;
+      });
+    }
+
+    function renderAll() {
+      const filtered = getFilteredReports();
+      updateStats(filtered);
+      renderMap(filtered);
+      renderReportList(filtered);
+    }
+
+    async function loadCurrentUserProfile() {
+      try {
+        const userId = storedUser.user.id;
+        const snap = await getDoc(doc(db, 'users', userId));
+
+        if (!snap.exists()) {
+          alert('الحساب غير موجود في قاعدة البيانات');
+          window.location.href = './Login/login.html';
+          return false;
+        }
+
+        const userData = snap.data();
+        const role = String(userData.role || '').trim().toLowerCase();
+
+        if (role !== 'health' && role !== 'صحة' && role !== 'موظف صحة') {
+          alert('ليس لديك صلاحية دخول خريطة قسم الصحة');
+          window.location.href = './Login/login.html';
+          return false;
+        }
+
+        welcomeName.textContent = 'مرحباً، ' + (userData.fullName || userData.name || userData.username || 'المستخدم');
+        userRoleText.textContent = 'متابعة البلاغات الصحية والمواقع الجغرافية للحالات';
+        currentUser.profile = userData;
+        return true;
+      } catch (error) {
+        console.error(error);
+        alert('تعذر تحميل بيانات المستخدم');
+        window.location.href = './Login/login.html';
+        return false;
+      }
+    }
+
+    async function loadReports() {
+      try {
+        const reportsRef = collection(db, 'health_reports');
+        let snapshot;
+
+        try {
+          snapshot = await getDocs(query(reportsRef, orderBy('createdAt', 'desc')));
+        } catch {
+          snapshot = await getDocs(reportsRef);
+        }
+
+        allReports = snapshot.docs.map(normalizeReport);
+        renderAll();
+      } catch (error) {
+        console.error('خطأ في تحميل البلاغات الصحية:', error);
+        reportList.innerHTML = `<div class="empty-state">تعذر تحميل البلاغات من قاعدة البيانات</div>`;
+      }
+    }
+
+    document.querySelectorAll('a.nav-item').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const href = link.getAttribute('href');
+        if (!href || href === '#') return;
+        event.preventDefault();
+        document.body.style.opacity = '0.86';
+        document.body.style.transform = 'translateY(6px)';
+        setTimeout(() => {
+          window.location.href = href;
+        }, 180);
+      });
+    });
+
+    statusFilter.addEventListener('change', renderAll);
+    refreshBtn.addEventListener('click', loadReports);
+
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        localStorage.removeItem('portalUser');
+        sessionStorage.removeItem('portalUser');
+        localStorage.removeItem('portalPendingAuth');
+        sessionStorage.removeItem('portalPendingAuth');
+        window.location.href = './Login/login.html';
+      }
+    });
+
+    async function startPage() {
+      const ok = await loadCurrentUserProfile();
+      if (!ok) return;
+      await loadReports();
+      setTimeout(() => map.invalidateSize(), 400);
+    }
+
+    startPage();
+  </script>
+</body>
+</html>
