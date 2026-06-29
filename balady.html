@@ -1903,7 +1903,7 @@ body {
     sessionStorage.getItem("portalUser");
 
   if (!savedUser) {
-    window.location.href = "Login/login.html";
+    window.location.href = "Login/index.html";
   }
 
   let currentUser = null;
@@ -1911,11 +1911,11 @@ body {
   try {
     currentUser = JSON.parse(savedUser);
   } catch (e) {
-    window.location.href = "Login/login.html";
+    window.location.href = "Login/index.html";
   }
 
   if (!currentUser || !currentUser.isLoggedIn || !currentUser.otpVerified || currentUser.user?.role !== "balady") {
-  window.location.href = "Login/login.html";
+  window.location.href = "Login/index.html";
 }
 
   let currentUserName =
@@ -2006,7 +2006,7 @@ body {
     sessionStorage.removeItem("portalUser");
     localStorage.removeItem("portalPendingAuth");
     sessionStorage.removeItem("portalPendingAuth");
-    window.location.href = "Login/login.html";
+    window.location.href = "Login/index.html";
   }
 
   window.logout = logout;
