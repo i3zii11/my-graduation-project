@@ -7,7 +7,7 @@ function getSavedUser() {
 function logout() {
   localStorage.removeItem("portalUser");
   sessionStorage.removeItem("portalUser");
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 }
 
 window.logout = logout;
@@ -119,7 +119,7 @@ function loadDashboard() {
   const savedUser = getSavedUser();
 
   if (!savedUser) {
-    window.location.href = "login.html";
+    window.location.href = "index.html";
     return;
   }
 
