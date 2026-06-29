@@ -268,7 +268,7 @@ function initApp() {
     sessionStorage.removeItem('portalUser');
     localStorage.removeItem('portalPendingAuth');
     sessionStorage.removeItem('portalPendingAuth');
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
   });
 }
 
