@@ -1831,7 +1831,7 @@
         sessionStorage.removeItem('portalUser');
         localStorage.removeItem('portalPendingAuth');
         sessionStorage.removeItem('portalPendingAuth');
-        window.location.replace('./Login/login.html');
+        window.location.replace('./Login/index.html');
       }
     }
 
@@ -2056,7 +2056,7 @@
       const stored = getStoredPortalUser();
 
       if (!stored || !stored.user || !stored.user.id) {
-        window.location.replace('./Login/login.html');
+        window.location.replace('./Login/index.html');
         return;
       }
 
@@ -2070,7 +2070,7 @@
 
         if (!HEALTH_ROLE_VALUES.includes(role)) {
           alert('ليس لديك صلاحية الدخول إلى قسم الصحة');
-          window.location.replace('./Login/login.html');
+          window.location.replace('./Login/index.html');
           return;
         }
 
@@ -2082,7 +2082,7 @@
       } catch (error) {
         console.error(error);
         alert(`خطأ في تحميل بيانات المستخدم: ${error.message}`);
-        window.location.replace('./Login/login.html');
+        window.location.replace('./Login/index.html');
       }
     }
 
