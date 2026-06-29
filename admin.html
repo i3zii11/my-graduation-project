@@ -1909,7 +1909,7 @@
         sessionStorage.removeItem("portalUser");
         localStorage.removeItem("portalPendingAuth");
         sessionStorage.removeItem("portalPendingAuth");
-        window.location.replace("./Login/login.html");
+        window.location.replace("./Login/index.html");
       }
     });
 
@@ -2277,7 +2277,7 @@
 
       if (!snap.exists()) {
         alert("الحساب غير موجود في قاعدة البيانات");
-        location.href = "./Login/login.html";
+        location.href = "./Login/index.html";
         return false;
       }
 
@@ -2285,7 +2285,7 @@
 
       if (adminData.role !== "admin") {
         alert("ليس لديك صلاحية دخول لوحة الأدمن");
-        location.href = "./Login/login.html";
+        location.href = "./Login/index.html";
         return false;
       }
 
@@ -2324,7 +2324,7 @@
       const stored = getStoredPortalUser();
 
       if (!stored || !stored.user || !stored.user.id) {
-        location.href = "./Login/login.html";
+        location.href = "./Login/index.html";
         return;
       }
 
